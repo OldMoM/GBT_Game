@@ -63,6 +63,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\UIScript.cs" />
+    <Compile Include="Assets\UIScript\BribeMessageFrame.cs" />
+    <Compile Include="Assets\UIScript\ControlConsole.cs" />
+    <Compile Include="Assets\UIScript\ControlConsoleEditor.cs" />
     <Compile Include="Assets\UIScript\PrepareStateEvent.cs" />
     <Compile Include="Assets\UIScript\Timer.cs" />
     <Reference Include="Unity.Timeline.Editor">
