@@ -169,10 +169,6 @@ namespace Peixi
             print("press roll card button");
             rollCardButton.SetActive(false);
             inquireRollCardFrame.SetActive(true);
-            if (onRollCard != null)
-            {
-                onRollCard.Invoke();
-            }
         }
         /// <summary>
         /// 确认Roll牌
@@ -182,7 +178,6 @@ namespace Peixi
             print("confirm roll card");
             rollCardButton.SetActive(true);
             inquireRollCardFrame.SetActive(false);
-
             director.playableAsset = timeLines[2];
             director.Play();
 
