@@ -6,7 +6,7 @@ using UnityEngine.Playables;
 
 namespace Peixi
 {
-    public class PrepareStateEvent : MonoBehaviour
+    public class PrepareStateEvent : RoundState
     {
         public PlayableDirector director;
         public PlayableAsset[] timeLines;
@@ -21,21 +21,38 @@ namespace Peixi
         public GameObject rollCardButton;
         public GameObject confirmRollCardButton;
         public GameObject cancelRollCardButton;
+        public GameObject bribeMessageFrame;
 
-        public event Action onRoundStart;
-        public event Action onRoundEnd;
+        /// <summary>
+        /// 玩家Roll牌
+        /// </summary>
         public event Action onRollCard;
+        /// <summary>
+        /// 拒绝接受贿赂
+        /// </summary>
         public event Action rejectBribe;
+        /// <summary>
+        /// 同意接受贿赂
+        /// </summary>
         public event Action approveBribe;
+        /// <summary>
+        /// 收到线上玩家的贿赂请求消息
+        /// </summary>
         public event Action bribeMessageReceived;
-        public event Action bribeMessageSent;
+        /// <summary>
+        /// 向其他玩家发送贿赂请求
+        /// </summary>
+        public event Action<string> bribeMessageSent;
+        /// <summary>
+        /// 收到贿赂请求处理结果
+        /// </summary>
+        public event Action<bool> bribeRequestResultReceived;
         // Start is called before the first frame update
         void Start()
         {
             director = GetComponent<PlayableDirector>();
-
-            onRoundEnd += OnPrepareStateEnd;
-            onRoundStart += OnPrepareStateStart;
+            onRoundStarted += OnRoundStart;
+            onRoundEnded += OnRoundEnd;
         }
 
         // Update is called once per frame
@@ -52,20 +69,22 @@ namespace Peixi
             }
         }
 
-
-        /// <summary>
-        /// 接收开始准备阶段的消息
-        /// </summary>
-        public void OnPrepareStateStart()
+        protected override void OnRoundStart()
         {
-
+            base.OnRoundStart();
+            print("开始准备阶段");
+            director.playableAsset = timeLines[0];
+            director.Play();
         }
-        /// <summary>
-        /// 发出结束准备阶段的消息
-        /// </summary>
-        public void OnPrepareStateEnd()
-        {
 
+        protected override void OnRoundEnd()
+        {
+            base.OnRoundEnd();
+            print("结束准备阶段，等待其他玩家");
+            director.playableAsset = timeLines[0];
+            director.time = director.duration;
+            engine += PlayStateEndAnim;
+            StartCoroutine(RoundInterval());
         }
 
         #region//Bribe
@@ -116,43 +135,57 @@ namespace Peixi
             {
                 bribeMessageReceived.Invoke();
             }
-            print("收到其他玩家的悄悄话");
+            //print("收到其他玩家的悄悄话");
         }
 
-        public void AgreeBribeButtonPressed()
+        public void InvokeApproveBribe()
         {
-
+            if (approveBribe != null)
+            {
+                approveBribe.Invoke();
+            }
         }
 
-        public void DisagreeBribeButtonPressed()
+        public void InvokeRejectBribe()
         {
-
+            if (rejectBribe != null)
+            {
+                rejectBribe.Invoke();
+            }
         }
 
-        public void OnBribeRequsetRejected()
+        public void InvokeBribeRequestResultReceived(bool m_result)
         {
-
-        }
-        
-        public void OnBribeRequestApproved()
-        {
-
+            bribeRequestResultReceived.Invoke(m_result);
         }
         #endregion
 
         #region//RollCard
+        /// <summary>
+        /// 询问是否Rollcard
+        /// </summary>
         public void OnRollCardButtonPressed()
         {
             print("press roll card button");
             rollCardButton.SetActive(false);
             inquireRollCardFrame.SetActive(true);
         }
-
+        /// <summary>
+        /// 确认Roll牌
+        /// </summary>
         public void OnConfirmRollCardButtonPressed()
         {
             print("confirm roll card");
             rollCardButton.SetActive(true);
             inquireRollCardFrame.SetActive(false);
+
+            director.playableAsset = timeLines[2];
+            director.Play();
+
+            if (onRollCard != null)
+            {
+                onRollCard.Invoke();
+            }
         }
 
         public void OnCancelRollCardButtonPressed()
@@ -168,10 +201,7 @@ namespace Peixi
         /// </summary>
         public void OnTimeOut()
         {
-            //play round end aniamtion
-            director.playableAsset = timeLines[0];
-            director.time = director.duration;
-            engine += PlayStateEndAnim;
+            print("结束准备阶段，等待其他玩家");
         }
 
         void PlayStateEndAnim()
@@ -185,5 +215,13 @@ namespace Peixi
                 engine -= PlayStateEndAnim;
             }
         }
+
+        #region//Test code
+        IEnumerator RoundInterval()
+        {
+            yield return new WaitForSeconds(2);
+            FindObjectOfType<ProposalStateEvent>().RoundStartInvoke();
+        }
+        #endregion
     }
 }

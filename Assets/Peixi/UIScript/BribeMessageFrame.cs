@@ -14,26 +14,28 @@ namespace Peixi
             prepareState = FindObjectOfType<PrepareStateEvent>();
             anim = GetComponent<Animation>();
             prepareState.bribeMessageReceived += OnBribeMessageReceived;
-            prepareState.approveBribe += OnApproveButtonPressed;
-            prepareState.rejectBribe += OnApproveButtonPressed;
+            //prepareState.approveBribe += OnApproveButtonPressed;
+            //prepareState.rejectBribe += OnApproveButtonPressed;
         }
 
         void OnBribeMessageReceived()
         {
+            Utility.AcitveAllChildren(transform, true);
             anim.Play();
-            print("弹出悄悄话信息框");
+            //print("弹出悄悄话信息框");
         }
 
         public void OnApproveButtonPressed()
         {
-            print("approve bribe button pressed");
-            anim.Rewind("RiseBribeMessage");
+            prepareState.InvokeApproveBribe();
+            Utility.AcitveAllChildren(transform, false);
         }
         
         public void OnRejectButtonPressed()
         {
-            print("reject bribe button pressed");
-            anim.Rewind();
+            //print("reject bribe button pressed");
+            prepareState.InvokeRejectBribe();
+            Utility.AcitveAllChildren(transform, false);
         }
     }
 }
