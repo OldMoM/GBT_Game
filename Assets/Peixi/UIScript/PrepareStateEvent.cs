@@ -169,6 +169,10 @@ namespace Peixi
             print("press roll card button");
             rollCardButton.SetActive(false);
             inquireRollCardFrame.SetActive(true);
+            if (onRollCard != null)
+            {
+                onRollCard.Invoke();
+            }
         }
         /// <summary>
         /// 确认Roll牌
